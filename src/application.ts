@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { AppError, hash, querySchema, recordSchema, type MemoryRecord, type StoredRecord } from './core.js';
 import { RecordDatabase, openDatabase } from './db.js';
 import { Vault } from './vault.js';
+import { CustomPageStore } from './custom-pages.js';
 
 export function importFingerprint(record: MemoryRecord) {
   return hash(JSON.stringify([record.title, record.date, record.timezone, record.body, record.attributes]));
@@ -10,7 +11,8 @@ export function importFingerprint(record: MemoryRecord) {
 export class Application {
   validationErrors: { path: string; error: string }[] = [];
   private pending: Promise<unknown> = Promise.resolve();
-  constructor(public vault: Vault, public db: RecordDatabase, public timezone: string) {}
+  readonly pages: CustomPageStore;
+  constructor(public vault: Vault, public db: RecordDatabase, public timezone: string) { this.pages = new CustomPageStore(vault); }
   private exclusive<T>(work: () => Promise<T>): Promise<T> {
     const task = this.pending.then(work);
     this.pending = task.catch(() => undefined);
@@ -49,18 +51,27 @@ export class Application {
     });
   }
   private async persist(record: MemoryRecord, existing?: { path: string; expectedHash: string }) {
+    if (record.page_id) await this.pages.get(record.page_id);
     const stored = await this.vault.write(record, existing);
     try { await this.db.upsert(stored); } catch {
       throw new AppError(503, `Markdown saved for ${record.id}; database indexing failed. Run rebuild before retrying.`);
     }
     return stored;
   }
+  async completePageRecord(pageId: string, recordId: string, completed: boolean, expectedHash: string) {
+    const page = await this.pages.get(pageId);
+    if (page.page.layout !== 'checklist') throw new AppError(400, 'Page is not a checklist');
+    const current = await this.get(recordId);
+    if (current.record.page_id !== pageId) throw new AppError(404, 'Record not found on this page');
+    return this.update(recordId, { attributes: { ...current.record.attributes, completed } }, expectedHash);
+  }
   async search(input: unknown, includeRestricted = true) {
-    const results = await this.db.search(querySchema.parse(input), includeRestricted);
+    const query = querySchema.parse(input);
+    const results = await this.db.search(query, includeRestricted);
     // Read current files so manual edits cannot leak newly restricted or deleted content through stale indexes.
     const current: StoredRecord[] = [];
     for (const item of results) {
-      try { current.push(await this.get(item.record.id, includeRestricted)); }
+      try { const record = await this.get(item.record.id, includeRestricted); if (!query.page_id || record.record.page_id === query.page_id) current.push(record); }
       catch (error) { if ((error instanceof AppError && error.status === 404) || (error as NodeJS.ErrnoException).code === 'ENOENT') continue; throw error; }
     }
     return current;

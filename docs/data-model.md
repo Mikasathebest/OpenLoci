@@ -29,6 +29,8 @@ Durable operational state in `sync/` prevents deleted imports from being resurre
 
 ## Common record fields
 
+Custom page definitions use a separate `pages/<uuid>.md` file: frontmatter contains `schema_version`, `id`, `title`, `layout` (`notes`, `checklist`, or `table`), and `created_at`; its Markdown body is the description. These definitions are read directly from the vault and do not appear as personal memory records. Ordinary records can carry a `page_id` UUID. SQLite and PostgreSQL index that association, and database transfer preserves it. Checklist completion is stored in the record's `attributes.completed` boolean. Include `pages/` when moving or backing up the vault.
+
 Each file has YAML frontmatter followed by ordinary Markdown. The first schema uses these common fields:
 
 - `schema_version`: integer format version, initially `1`.

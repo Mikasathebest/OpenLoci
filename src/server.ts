@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 const settings = config();
 const app = await openApplication(settings);
-const mcp = new McpManager(await readRegistry(settings.mcpConfig));
+const mcp = new McpManager(await readRegistry(settings.mcpConfig), settings.mcpConfig);
 await mkdir(join(settings.vault, 'records'), { recursive: true, mode: 0o700 });
 let debounce: ReturnType<typeof setTimeout> | undefined;
 const reconcile = () => { app.rebuild().catch(() => console.error('Vault reconciliation failed; run rebuild')); };

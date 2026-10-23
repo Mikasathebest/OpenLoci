@@ -7,7 +7,7 @@ import { types } from './core.js';
 
 export function createMemoryServer(app: Application) {
   const server = new McpServer({ name: 'openloci', version: '0.1.0' });
-  const query = { q: z.string().max(500).optional(), type: z.enum(types).optional(), from: z.string().optional(), to: z.string().optional(),
+  const query = { q: z.string().max(500).optional(), type: z.enum(types).optional(), page_id: z.string().uuid().optional(), from: z.string().optional(), to: z.string().optional(),
     limit: z.number().int().min(1).max(100).default(20), offset: z.number().int().min(0).default(0) };
   function result(value: unknown) { return { content: [{ type: 'text' as const, text: JSON.stringify(value) }] }; }
   server.registerTool('memory_search', { description: 'Search standard-sensitivity memory records, with IDs and revision hashes.', inputSchema: query },

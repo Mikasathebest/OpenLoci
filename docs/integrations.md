@@ -1,5 +1,13 @@
 # OpenLoci connection and import setup
 
+## Browser imports
+
+Use the sidebar's **Import from Notion** or **Import from Google Calendar** actions. The browser flow enables the required read tools in the private Notion configuration and can start browser OAuth when authorization is missing. It uses the same MCP client and vault services as CLI imports. Google Calendar imports in this flow use Notion's linked calendar accounts, independently of the optional official Google preview connector.
+
+Preview requests accept a source and inclusive local dates for at most 93 days. Notion search is bounded to 50 candidate pages created in the range; it fetches their content and skips pure navigation pages. Dated titles determine journal dates, with source activity timestamps as a fallback. This is not an exhaustive search of older pages edited recently. Calendar boundaries are computed in the vault timezone, including daylight-saving changes. Unrecognized event formats and partial reads do not silently become a successful complete import.
+
+The browser shows source limits, failed reads, and truncation warnings. The user chooses records before applying. Server-held previews are bounded, expire after 30 minutes, and are lost on restart; source records remain unchanged. Saving goes through deterministic import IDs and local-edit conflict checks. A failed subset can be retried without duplicating successful records.
+
 ## Initialize private configuration
 
 Run `npm run cli -- mcp:init`. It writes `<vault>/.openloci/mcp.json` with Notion and Google Calendar entries disabled and never overwrites an existing config. Set `OPENLOCI_MCP_CONFIG` to use another private path. Configuration is loaded at process startup; restart the web app after edits or sign-in.

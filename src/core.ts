@@ -28,6 +28,7 @@ export const recordSchema = z.object({
   sensitivity: z.enum(['standard', 'restricted']).default('standard'),
   tags: z.array(z.string().max(100)).max(100).default([]),
   links: z.array(z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/)).default([]),
+  page_id: z.string().uuid().optional(),
   source: sourceSchema.default({ kind: 'manual' }),
   attributes: z.record(z.unknown()).default({}),
   body: z.string().max(1_000_000).default(''),
@@ -44,6 +45,7 @@ export const recordSchema = z.object({
 export type MemoryRecord = z.infer<typeof recordSchema>;
 export const querySchema = z.object({
   q: z.string().max(500).optional(), type: z.enum(types).optional(),
+  page_id: z.string().uuid().optional(),
   from: dateSchema.optional(), to: dateSchema.optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
@@ -52,5 +54,5 @@ export type MemoryQuery = z.infer<typeof querySchema>;
 export type StoredRecord = { record: MemoryRecord; hash: string; path: string };
 export function hash(content: string): string { return createHash('sha256').update(content).digest('hex'); }
 export class AppError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  constructor(public status: number, message: string, public code?: string) { super(message); }
 }

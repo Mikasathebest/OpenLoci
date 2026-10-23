@@ -73,6 +73,9 @@ export class RecordDatabase {
       source_key TEXT UNIQUE
     )`);
     await this.driver.query('CREATE INDEX IF NOT EXISTS records_date_type ON records(date, type)');
+    await this.driver.query(this.driver.kind === 'sqlite'
+      ? "CREATE INDEX IF NOT EXISTS records_page ON records(json_extract(metadata, '$.page_id'))"
+      : "CREATE INDEX IF NOT EXISTS records_page ON records((metadata::jsonb->>'page_id'))");
     if (this.driver.kind === 'sqlite') {
       await this.driver.query('CREATE VIRTUAL TABLE IF NOT EXISTS records_fts USING fts5(id UNINDEXED, title, body)');
       await this.driver.query(`CREATE TRIGGER IF NOT EXISTS records_ai AFTER INSERT ON records BEGIN
@@ -113,6 +116,10 @@ export class RecordDatabase {
     }
     if (!includeRestricted) {
       where.push(this.driver.kind === 'sqlite' ? "json_extract(metadata, '$.sensitivity')='standard'" : "metadata::jsonb->>'sensitivity'='standard'");
+    }
+    if (query.page_id) {
+      where.push(this.driver.kind === 'sqlite' ? "json_extract(metadata, '$.page_id')=?" : "metadata::jsonb->>'page_id'=?");
+      params.push(query.page_id);
     }
     if (query.q?.trim()) {
       const terms = query.q.match(/[\p{L}\p{N}_]+/gu) || [];

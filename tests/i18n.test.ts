@@ -48,7 +48,7 @@ test('all four locales render, preserve original notes and filters, and persist 
     const js = await (await fetch(`${base}/assets/app.js?lang=${locale}`)).text();
     assert.ok(js.includes(messages[locale].invalidAttributes));
     // Detail pages have no capture form; the shared script must still run for their language switch.
-    new Script(browserScript(locale)).runInContext(createContext({ document: { querySelector: () => null } }));
+    new Script(browserScript(locale)).runInContext(createContext({ document: { querySelector: () => null, querySelectorAll: () => [] } }));
   }
   assert.equal((await app.get(saved.record.id)).hash, saved.hash);
 });

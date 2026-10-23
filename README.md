@@ -30,6 +30,8 @@ Open `http://127.0.0.1:4310`. The default private vault is `~/.local/share/openl
 
 Use the language selector at the top of any page to switch between **English, 简体中文, 日本語, and Español**. The initial language follows your browser preference; an explicit selection is remembered in a local cookie. Search filters and original note content are preserved. Direct links also support `?lang=zh-CN`, `?lang=ja`, and `?lang=es`.
 
+Select **+ More** in the sidebar to create a custom page with a title, description, and **Notes**, **Checklist**, or **Table** layout. Page definitions live in `pages/<id>.md`; their entries remain ordinary Markdown records with a `page_id` link. Completed checklist items are saved with revision checks.
+
 For compiled execution, run `npm run build` followed by `npm start`. Validate with `npm run check` and `npm test`. PostgreSQL integration tests additionally require a disposable `TEST_DATABASE_URL`; they write records into that database.
 
 ## Local and cloud databases
@@ -49,6 +51,12 @@ npm run cli -- db:transfer --apply
 The transfer previews the record count, copies in a PostgreSQL transaction, and verifies complete records before committing. It preserves the source. Use TLS settings required by your cloud provider; certificate verification is never disabled by application code. Database transfer does not upload the vault or attachments. See [database operations](docs/database.md).
 
 ## Connect Notion and Google Calendar
+
+The sidebar now has **Import from Notion** and **Import from Google Calendar** buttons. Choose a date range, complete browser sign-in if needed, review and select records, then import. The Google button reads calendars linked under **Notion → Settings → Account → Mail & Calendar**. It gives connection instructions when that link is missing. No CLI is needed for this browser flow.
+
+Notion's date-based preview uses creation dates and excludes pages that contain only navigation links. Older pages edited in the chosen range can be absent; batch limits, failed reads, and truncated pages produce visible warnings. Previews expire after 30 minutes or a server restart. Existing local edits are preserved when remote changes conflict.
+
+For explicit CLI connections and the standalone community Calendar server:
 
 ```sh
 npm run cli -- mcp:init

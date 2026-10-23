@@ -1,5 +1,5 @@
 import { readFile, mkdir, writeFile, access } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { z } from 'zod';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -32,10 +32,10 @@ export async function readRegistry(path: string) {
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
 }
 
-export async function initializeRegistry(path: string, stateDirectory: string) {
+export function defaultServers(stateDirectory: string) {
   const require = createRequire(import.meta.url);
   const proxy = resolve(dirname(require.resolve('mcp-remote/package.json')), 'dist/proxy.js');
-  const registry = { servers: [
+  return registrySchema.parse({ servers: [
     { id: 'notion', enabled: false, transport: 'stdio', command: process.execPath,
       args: [proxy, 'https://mcp.notion.com/mcp'],
       env: { MCP_REMOTE_CONFIG_DIR: resolve(stateDirectory, 'notion-auth') },
@@ -45,7 +45,11 @@ export async function initializeRegistry(path: string, stateDirectory: string) {
       env: { GOOGLE_CALENDAR_MCP_TOKEN_PATH: resolve(stateDirectory, 'google-tokens.json') },
       inheritEnv: ['GOOGLE_OAUTH_CREDENTIALS'], requiredEnv: ['GOOGLE_OAUTH_CREDENTIALS'],
       allowedTools: ['list-calendars', 'list-events', 'get-event'], timeoutMs: 180_000 },
-  ] };
+  ] }).servers;
+}
+
+export async function initializeRegistry(path: string, stateDirectory: string) {
+  const registry = { servers: defaultServers(stateDirectory) };
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   await writeFile(path, JSON.stringify(registry, null, 2) + '\n', { flag: 'wx', mode: 0o600 });
   return registry;
@@ -54,7 +58,16 @@ export async function initializeRegistry(path: string, stateDirectory: string) {
 export class McpManager {
   private clients = new Map<string, Client>();
   private opening = new Map<string, Promise<Client>>();
-  constructor(public servers: McpConnection[]) {}
+  constructor(public servers: McpConnection[], private configurationPath?: string) {}
+  async enableNotionImport(vault: string) {
+    let notion = this.servers.find(server => server.id === 'notion');
+    if (!notion) { notion = defaultServers(join(vault, '.openloci')).find(server => server.id === 'notion')!; this.servers.push(notion); }
+    notion.enabled = true;
+    notion.allowedTools = [...new Set([...notion.allowedTools, 'notion-search', 'notion-fetch', 'notion-get-self', 'notion-calendar-list-calendars', 'notion-calendar-list-events'])];
+    const path = this.configurationPath || join(vault, '.openloci', 'mcp.json');
+    await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+    await writeFile(path, JSON.stringify({ servers: this.servers }, null, 2) + '\n', { mode: 0o600 });
+  }
   server(id: string) {
     const server = this.servers.find(s => s.id === id);
     if (!server) throw new AppError(404, `MCP server ${id} is not configured; run mcp:init`);
@@ -117,7 +130,10 @@ export class McpManager {
     if (!server.allowedTools.includes(name)) throw new AppError(403, `Tool ${name} is not allowed for ${id}`);
     const client = await this.connect(id);
     const result = await client.callTool({ name, arguments: args }, undefined, { timeout: server.timeoutMs });
-    if (result.isError) throw new AppError(502, `MCP tool ${id}/${name} failed; check server authentication and arguments`);
+    if (result.isError) {
+      if (JSON.stringify(result.content).includes('calendar_connection_required')) throw new AppError(409, 'Connect Google Calendar in Notion Settings → Account → Mail & Calendar.', 'calendar_connection_required');
+      throw new AppError(502, `MCP tool ${id}/${name} failed; check server authentication and arguments`);
+    }
     return result;
   }
   async status() {

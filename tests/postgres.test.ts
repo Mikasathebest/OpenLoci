@@ -11,7 +11,8 @@ test('PostgreSQL transfer verifies complete records, FTS, filters and refusal to
   const app = await openApplication({ vault: await mkdtemp(join(tmpdir(), 'openloci-transfer-')), timezone: 'UTC' });
   const postgres = await openDatabase(app.vault.root, process.env.TEST_DATABASE_URL);
   t.after(async () => { await app.close(); await postgres.close(); });
-  const first = await app.create({ type: 'exercise', title: 'Morning run', date: '2026-10-23', body: 'Riverside running', attributes: { duration_seconds: 1800 }, custom: { preserved: true } });
+  const page = await app.pages.create({ title: 'Training', layout: 'table' });
+  const first = await app.create({ type: 'exercise', title: 'Morning run', date: '2026-10-23', body: 'Riverside running', attributes: { duration_seconds: 1800 }, custom: { preserved: true }, page_id: page.page.id });
   await app.create({ type: 'expense', title: 'Lunch', date: '2026-10-22', body: 'Tofu', attributes: { amount_minor: 1250, currency: 'USD' } });
   assert.deepEqual(await transferDatabase(app.db, postgres), { preview: true, records: 2, target: 'postgres' });
   assert.equal(await postgres.count(), 0);
@@ -19,6 +20,7 @@ test('PostgreSQL transfer verifies complete records, FTS, filters and refusal to
   assert.deepEqual(await postgres.get(first.record.id), first);
   assert.equal((await postgres.search({ q: 'running', type: 'exercise', limit: 20, offset: 0 }))[0].record.id, first.record.id);
   assert.equal((await postgres.search({ from: '2026-10-23', limit: 20, offset: 0 })).length, 1);
+  assert.equal((await postgres.search({ page_id: page.page.id, limit: 20, offset: 0 }))[0].record.id, first.record.id);
   await assert.rejects(transferDatabase(app.db, postgres, true), /empty target/);
   // A failed transaction cannot leave partial copied rows.
   await assert.rejects(postgres.driver.transaction(async driver => {
