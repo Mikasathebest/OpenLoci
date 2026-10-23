@@ -1,0 +1,38 @@
+{
+  "name": "openloci",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Markdown personal memory with SQLite, PostgreSQL and MCP integrations",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "cli": "tsx src/cli.ts",
+    "mcp": "tsx src/mcp-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "dotenv": "17.2.3",
+    "express": "5.2.1",
+    "marked": "17.0.1",
+    "mcp-remote": "0.15.2",
+    "pg": "8.16.3",
+    "sanitize-html": "2.18.1",
+    "yaml": "2.9.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "@types/sanitize-html": "2.16.2",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

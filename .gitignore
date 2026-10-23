@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.openloci/
+vault/
+*.sqlite*
+*.db
+*.log
+gcp-oauth*.json
+*credentials*.json
+*tokens*.json
+!.mcp.example.json
+!examples/vault/
+!examples/vault/**
