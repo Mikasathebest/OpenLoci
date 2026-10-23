@@ -28,6 +28,8 @@ npm run dev
 
 Open `http://127.0.0.1:4310`. The default private vault is `~/.local/share/openloci/vault`; set `OPENLOCI_VAULT` in `.env` to change it. The page supports capture, search, date/type filters, and rendered record details for all eight record types. Structured details are JSON in this first version. Expenses require integer `amount_minor` and a three-letter `currency`.
 
+Use the language selector at the top of any page to switch between **English, 简体中文, 日本語, and Español**. The initial language follows your browser preference; an explicit selection is remembered in a local cookie. Search filters and original note content are preserved. Direct links also support `?lang=zh-CN`, `?lang=ja`, and `?lang=es`.
+
 For compiled execution, run `npm run build` followed by `npm start`. Validate with `npm run check` and `npm test`. PostgreSQL integration tests additionally require a disposable `TEST_DATABASE_URL`; they write records into that database.
 
 ## Local and cloud databases
@@ -59,6 +61,8 @@ npm run cli -- mcp:connect google-calendar
 Notion uses its hosted MCP endpoint through an OAuth bridge. Google Calendar uses the community `@cocal/google-calendar-mcp` server and needs a Google Cloud project with Calendar API enabled and desktop OAuth credentials. Each account requires your browser authorization. Configured servers and authenticated connections are different states; no account is connected merely by installing this project.
 
 Imports are explicit, read-only toward external services, and preview by default. [Integration setup](docs/integrations.md) includes credentials, sign-in, import examples, and tool allowlists.
+
+Google's official remote MCP server has a separate optional setup helper: `npm run cli -- mcp:google /absolute/path/to/web-client.json`. See [official Google setup and the Notion calendar alternative](docs/integrations.md#official-google-calendar-mcp).
 
 OpenLoci also supplies its own read-only stdio MCP server: run `npm run mcp`, or configure an assistant to run `node /absolute/path/to/OpenLoci/dist/mcp-server.js` after building. Set its working directory or environment so it reads the intended vault settings. It exposes `memory_search`, `memory_get`, and byte-budgeted `memory_context`, excluding restricted records. `OPENLOCI_MCP_WRITE=1` explicitly enables capture.
 

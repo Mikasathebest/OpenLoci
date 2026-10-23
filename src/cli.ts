@@ -7,6 +7,7 @@ import { initializeRegistry, McpManager, readRegistry } from './integrations/mcp
 import { importCalendar, importNotion } from './integrations/imports.js';
 import { transferDatabase } from './transfer.js';
 import { parseMarkdown } from './vault.js';
+import { configureGoogleMcp } from './integrations/google.js';
 
 const help = `OpenLoci v0.1
   npm run cli -- init                    Initialize vault and database
@@ -17,6 +18,7 @@ const help = `OpenLoci v0.1
   npm run cli -- db:transfer [--apply]   Copy to TARGET_DATABASE_URL (preview by default)
   npm run cli -- mcp:init                Write private Notion/Google MCP configuration
   npm run cli -- mcp:status              Report configuration (no connections)
+  npm run cli -- mcp:google web-client.json  Configure Google's official preview MCP
   npm run cli -- mcp:connect SERVER      Enable and connect; may open OAuth sign-in
   npm run cli -- mcp:tools SERVER        Discover tools on an enabled server
   npm run cli -- mcp:call SERVER TOOL arguments.json
@@ -36,6 +38,11 @@ async function main() {
   if (command === 'mcp:init') {
     await initializeRegistry(settings.mcpConfig, join(settings.vault, '.openloci'));
     console.log(`Created ${settings.mcpConfig}. Servers start disabled; use mcp:connect SERVER.`); return;
+  }
+  if (command === 'mcp:google') {
+    if (!args[0]) throw new Error('Provide the downloaded Google Web application OAuth client JSON path');
+    console.log(JSON.stringify(await configureGoogleMcp(settings.mcpConfig, join(settings.vault, '.openloci'), args[0]), null, 2));
+    return;
   }
   let servers = await readRegistry(settings.mcpConfig);
   if (command === 'mcp:connect') {

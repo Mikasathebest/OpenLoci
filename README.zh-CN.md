@@ -27,6 +27,8 @@ npm run dev
 
 v0.1 提供记录创建、时间线、按日期和类型筛选、全文搜索，以及 Markdown 详情页。结构化属性暂时通过 JSON 输入；支出记录需要整数 `amount_minor` 和三位大写货币代码 `currency`。
 
+每个页面顶部均可切换 **English、简体中文、日本語、Español**。首次访问会根据浏览器语言选择界面；手动选择会保存在本地 Cookie 中。切换时保留搜索条件，日记原文不会被翻译或改写。也可以通过 `?lang=zh-CN`、`?lang=ja`、`?lang=es` 直接打开对应语言。
+
 编译运行使用 `npm run build` 和 `npm start`。检查与测试使用 `npm run check` 和 `npm test`。PostgreSQL 集成测试需要额外设置 `TEST_DATABASE_URL`，并应指向专门用于测试的空数据库。
 
 ## 本地数据库与 PostgreSQL
@@ -58,6 +60,8 @@ npm run cli -- mcp:connect google-calendar
 Notion 通过 OAuth 桥接连接官方托管 MCP 服务。Google Calendar 使用社区维护的 `@cocal/google-calendar-mcp`，需要启用 Calendar API 的 Google Cloud 项目和桌面应用 OAuth 凭据。两者均需用户授权；安装程序并不代表已连接个人账户。
 
 导入默认仅预览，只有显式指定 `apply: true` 才会保存到本地。OpenLoci 不会通过这些导入操作修改外部页面或日历。详见 [连接与导入指南](docs/integrations.md)。
+
+Google 官方远程 MCP 服务另有可选配置命令：`npm run cli -- mcp:google /absolute/path/to/web-client.json`。也可把 Google 账户关联到 Notion，通过已授权的 Notion MCP 读取日历。详见 [Google 官方服务与 Notion 日历路径](docs/integrations.md#official-google-calendar-mcp)。
 
 OpenLoci 自身也提供只读 stdio MCP 服务，可用 `npm run mcp` 启动，向助手暴露 `memory_search`、`memory_get` 和按字节限制的 `memory_context`。默认排除 `restricted` 记录。只有明确设置 `OPENLOCI_MCP_WRITE=1` 才启用创建记录工具。
 

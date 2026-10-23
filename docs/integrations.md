@@ -26,7 +26,7 @@ Create a private JSON options file outside the source checkout:
 
 Run `npm run cli -- import:notion /absolute/path/to/options.json`. Inspect the preview, then set `apply` to `true` to save. Import one selected page at a time. The page ID is canonicalized for deduplication; choose a stable account label per workspace. The body preserves the MCP fetch representation, including structured text wrappers when present. This version does not recursively traverse pages or download attachments. The saved record is a journal, with the user supplying its title and local grouping date.
 
-## Google Calendar
+## Google Calendar through the community server
 
 This integration uses the community-maintained [Google Calendar MCP server](https://github.com/nspady/google-calendar-mcp), pinned to `@cocal/google-calendar-mcp@2.7.0`. It is separate from Google's own services and SDKs. Configure its prerequisites using its setup guide: create a Google Cloud project, enable Calendar API, configure consent/test users as applicable, and download desktop OAuth credentials.
 
@@ -53,6 +53,28 @@ Create a private import options file:
 ```
 
 Use the exact account nickname configured in the upstream server; `personal` here is an example. Discover calendar IDs with `list-calendars`. Run `npm run cli -- import:calendar /absolute/path/to/options.json`. Inspect the preview and set `apply` to `true` to save. Each import covers one explicit account/calendar and at most 93 days; the upstream server performs event listing. Partial account failures are rejected. All-day exclusive end dates and timed occurrence IDs are preserved. The first version stores returned occurrences, not a complete locally expandable recurrence engine.
+
+## Official Google Calendar MCP
+
+Google's [official setup guide](https://developers.google.com/workspace/calendar/api/guides/configure-mcp-server) lists a remote server at `https://calendarmcp.googleapis.com/mcp/v1`. It requires Developer Preview enrollment, a Cloud project with `calendar-json.googleapis.com` and `calendarmcp.googleapis.com` enabled, and an OAuth client configured for an AI-powered agent. The guide provides read scopes for calendar lists, events, and availability.
+
+OpenLoci's optional helper uses a **Web application** OAuth client with the authorized redirect URI `http://localhost:4311/oauth/callback`. Download that client's JSON, then run:
+
+```sh
+npm run cli -- mcp:google /absolute/path/to/web-client.json
+npm run cli -- mcp:connect google-calendar-official
+npm run cli -- mcp:tools google-calendar-official
+```
+
+The helper validates the callback, keeps client credentials in private files, preserves other configured servers, and requests only the read scopes. Connection uses the pinned OAuth bridge with offline access for refresh tokens. It never prints the client secret or embeds it in subprocess arguments. A successful helper run means **configured**, not authenticated or preview-approved.
+
+Once authorized, inspect the discovered input schemas and use `mcp:call google-calendar-official TOOL arguments.json` for allowed read tools. Official-server event normalization and pagination are not implemented by `import:calendar`, which still targets the community server. The official setup helper has local configuration tests; live Google verification requires an eligible project and user authorization.
+
+## Google Calendar through Notion
+
+An existing Notion MCP authorization can also read calendars linked to that Notion account. In Notion's workspace menu, open **Settings → Account → Mail & Calendar → Connected calendars**, then connect your Google account or link your existing Notion Calendar account. See [Notion's settings instructions](https://www.notion.com/help/manage-email-and-calendar-settings).
+
+Allowlist only `notion-calendar-list-calendars` and `notion-calendar-list-events` in the private Notion entry before calling them. Discover their schemas with `mcp:tools notion`. This route uses Notion's Google authorization and does not use your standalone Google Cloud OAuth client. A working Notion notes connection does not establish calendar access: verify the calendar list first, then read a bounded time range.
 
 ## Conflict and privacy behavior
 
