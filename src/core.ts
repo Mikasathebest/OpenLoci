@@ -30,7 +30,7 @@ export const recordSchema = z.object({
   links: z.array(z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/)).default([]),
   page_id: z.string().uuid().optional(),
   source: sourceSchema.default({ kind: 'manual' }),
-  attributes: z.record(z.unknown()).default({}),
+  attributes: z.record(z.string(), z.unknown()).default({}),
   body: z.string().max(1_000_000).default(''),
 }).passthrough().superRefine((record, ctx) => {
   if (record.type === 'expense') {

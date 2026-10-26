@@ -2,9 +2,9 @@
 
 ## Vault organization
 
-In v0.1 all active record types live under `records/<type>/YYYY/MM/<id>.md`, including profile and memory. The special top-level profile/memory locations below are a future organization option. Current `.openloci/` contains `index.sqlite` when using SQLite, revision `history/`, private `mcp.json`, and provider authentication files. Scheduled sync state, embeddings, and summary caches are not implemented yet. Back up the whole private vault, including hidden directories; do not publish it with the source code.
+In v0.1 all active record types live under `records/<type>/YYYY/MM/<id>.md`, including profile and memory. The special top-level profile/memory locations below are a future organization option. Meal uploads currently use `attachments/media/<sha256>.<ext>` and travel email review uses private `inbox/travel/<id>.txt`. [Workspace field and import details](domain-workspaces.md) describe the implemented subset. Current `.openloci/` contains `index.sqlite` when using SQLite, revision `history/`, private `mcp.json`, and provider authentication files. Scheduled sync state, embeddings, and summary caches are not implemented yet. Back up the whole private vault, including hidden directories; do not publish it with the source code.
 
-Use one Markdown file per record. A daily journal has one record per local date; meal, exercise, expense, and calendar entries remain separate records so imports and edits do not rewrite a large daily file. The daily HTML page composes them using indexed dates and links.
+Use one Markdown file per record. Journal documents have independent IDs and may share a local date; meal, exercise, expense, and calendar entries remain separate records so imports and edits do not rewrite a large daily file. The daily HTML page composes them using indexed dates and links.
 
 ```text
 vault/

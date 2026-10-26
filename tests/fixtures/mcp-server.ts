@@ -13,7 +13,7 @@ server.registerTool('notion-fetch', { inputSchema: { id: z.string() } }, async i
   : input.id === '11111111-1111-4111-8111-111111111111' ? JSON.stringify({ title: '10.21 Reading', text: '<content>Read a book. **Useful notes.**</content>' })
   : '# Weekly reflection\n\nA good week for walking.' }] }));
 server.registerTool('notion-get-self', { inputSchema: {} }, async () => ({ content: [{ type: 'text', text: JSON.stringify({ workspace: { id: 'fixture-workspace', name: 'Test workspace' } }) }] }));
-server.registerTool('notion-search', { inputSchema: { query: z.string(), filters: z.record(z.unknown()), page_size: z.number() } }, async () => ({ content: [{ type: 'text', text: JSON.stringify({ results: [
+server.registerTool('notion-search', { inputSchema: { query: z.string(), filters: z.record(z.string(), z.unknown()), page_size: z.number() } }, async () => ({ content: [{ type: 'text', text: JSON.stringify({ results: [
   { id: '11111111-1111-4111-8111-111111111111', title: '10.21 Reading', timestamp: '2026-10-21T01:00:00Z' },
   { id: '22222222-2222-4222-8222-222222222222', title: 'October', timestamp: '2026-10-21T01:00:00Z' },
 ] }) }] }));

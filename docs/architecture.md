@@ -8,7 +8,7 @@ Each user action and integration import follows the same validation and persiste
 
 ## Proposed technology choices
 
-The v0.1 implementation uses TypeScript, Node.js 24, Express, SQLite FTS5, PostgreSQL GIN full-text search, YAML, and the MCP TypeScript SDK. HTML is rendered on the server with a small browser script; React is deferred until richer editors justify it. The current compact layout is `src/` with core, database, vault, application, HTTP, rendering, and integration modules, plus `tests/`. The package layout below remains a future extraction plan.
+The v0.1 implementation uses TypeScript, Node.js 24, Express, SQLite FTS5, PostgreSQL GIN full-text search, YAML, and the MCP TypeScript SDK. HTML is rendered on the server with a small browser script; The six workspaces use native DOM interactions in `public/domain.js` and separate styles in `public/domain.css`. `src/domain-view.ts` renders localized workspace shells; `src/domain-http.ts` and `src/domain-service.ts` implement forms, aggregates, attachment uploads, file/email import and optional model recognition. Leaflet assets are served locally. React remains a possible future migration. The compact layout is `src/` with core, database, vault, application, HTTP, rendering, and integration modules, plus `public/` and `tests/`. The package layout below remains a future extraction plan.
 
 SQLite and PostgreSQL implement the same driver and record repository interfaces. Both hold complete record projections for efficient reads, while Markdown remains the authority. [Database operations](database.md) specifies transfer and recovery. Commercial multi-user deployment is a later layer, separate from this local implementation.
 
@@ -112,7 +112,7 @@ Provide calendar day/week/month views, a daily page combining planned and comple
 
 Disable raw HTML by default, sanitize rendered output, block executable URL schemes, and constrain attachment paths. Imported Markdown is untrusted content. Remote images require an explicit loading policy because loading them can disclose browsing activity.
 
-The local app serves authenticated interactive views; static HTML export is an explicit operation with a preview of included records and attachments. Private records must never be published automatically.
+The current local app serves interactive views on loopback with Host/Origin checks and no account authentication. A hosted version would require authentication; static HTML export is an explicit operation with a preview of included records and attachments. Private records must never be published automatically.
 
 ## Privacy and operations
 

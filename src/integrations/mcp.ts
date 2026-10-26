@@ -11,7 +11,7 @@ const serverSchema = z.object({
   id: z.string().regex(/^[a-z0-9_-]+$/), enabled: z.boolean().default(false),
   transport: z.enum(['stdio', 'http']), command: z.string().optional(), args: z.array(z.string()).default([]),
   url: z.string().url().optional(), bearerTokenEnv: z.string().optional(),
-  env: z.record(z.string()).default({}), inheritEnv: z.array(z.string()).default([]),
+  env: z.record(z.string(), z.string()).default({}), inheritEnv: z.array(z.string()).default([]),
   requiredEnv: z.array(z.string()).default([]),
   allowedTools: z.array(z.string()).default([]), timeoutMs: z.number().int().min(1000).max(300_000).default(30_000),
 }).superRefine((server, ctx) => {

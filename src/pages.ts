@@ -1,11 +1,12 @@
 import { escapeHtml as esc, renderMarkdown } from './rendering.js';
-import { types, type StoredRecord, type MemoryQuery } from './core.js';
+import { type StoredRecord, type MemoryQuery } from './core.js';
 import { displayDate, languageNames, locales, messages, type Locale } from './i18n.js';
 import type { CustomPage } from './custom-pages.js';
 import { sidebar, dialogs, customRecords, customScript } from './custom-ui.js';
 import { pageCopy } from './page-copy.js';
+import { domainTypes as types } from './domain-service.js';
 
-function languageSwitcher(locale: Locale, parameters: Record<string, string> = {}) {
+export function languageSwitcher(locale: Locale, parameters: Record<string, string> = {}) {
   const t = messages[locale];
   const hidden = Object.entries(parameters).filter(([key]) => key !== 'lang').map(([key, value]) => `<input type="hidden" name="${esc(key)}" value="${esc(value)}">`).join('');
   return `<form class="language-switch" method="get">${hidden}<label for="language">${t.language}<select id="language" name="lang">${locales.map(value => `<option value="${value}" lang="${value}" ${value === locale ? 'selected' : ''}>${languageNames[value]}</option>`).join('')}</select></label><button class="secondary" type="submit">${t.apply}</button></form>`;

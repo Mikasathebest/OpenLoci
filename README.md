@@ -26,13 +26,24 @@ npm run cli -- init
 npm run dev
 ```
 
-Open `http://127.0.0.1:4310`. The default private vault is `~/.local/share/openloci/vault`; set `OPENLOCI_VAULT` in `.env` to change it. The page supports capture, search, date/type filters, and rendered record details for all eight record types. Structured details are JSON in this first version. Expenses require integer `amount_minor` and a three-letter `currency`.
+Open `http://127.0.0.1:4310`. The default private vault is `~/.local/share/openloci/vault`; set `OPENLOCI_VAULT` in `.env` to change it. The six domain workspaces provide a tabbed journal editor with `/` commands, week/month calendar, photo meal diary, health dashboard, monthly finances and budgets, and map-based travel plans. Their forms save portable Markdown; SQLite/PostgreSQL powers queries. The underlying API retains all eight record types.
 
 Use the language selector at the top of any page to switch between **English, 简体中文, 日本語, and Español**. The initial language follows your browser preference; an explicit selection is remembered in a local cookie. Search filters and original note content are preserved. Direct links also support `?lang=zh-CN`, `?lang=ja`, and `?lang=es`.
 
 Select **+ More** in the sidebar to create a custom page with a title, description, and **Notes**, **Checklist**, or **Table** layout. Page definitions live in `pages/<id>.md`; their entries remain ordinary Markdown records with a `page_id` link. Completed checklist items are saved with revision checks.
 
 For compiled execution, run `npm run build` followed by `npm start`. Validate with `npm run check` and `npm test`. PostgreSQL integration tests additionally require a disposable `TEST_DATABASE_URL`; they write records into that database.
+
+## Domain workspaces
+
+- **Journal:** multiple tabs, Markdown blocks, headings and todos through `/`, autosave and revision checks.
+- **Calendar:** Google Calendar-inspired week/month views; click a half-hour slot to create events, tasks or meetings. Entries are local; no invitations are sent.
+- **Meals:** upload a photo, review food and optional calorie estimates, and add a linked OpenLoci calendar event. Recognition requires your configured model and credentials.
+- **Exercise:** Apple Health-inspired activity rings, steps, heart rate and workouts; import CSV, JSON or Apple Health XML with source selection.
+- **Expenses:** monthly income/expenses, budget, categories, transactions and history; CSV/JSON import with preview and deduplication. Currencies are kept separate.
+- **Travel:** map and itinerary by date/city/place, map pins, and reviewable email paste/`.eml` import. Automatic mailbox reception requires a separately configured bridge.
+
+Profile and Memories are removed from default navigation; existing records remain available through the API and original files. Journal is raw writing, Profile is confirmed facts/preferences, and Memory is a longer-term fact with provenance. See [workspace behavior, data formats and model/email setup](docs/domain-workspaces.md).
 
 ## Local and cloud databases
 
@@ -88,6 +99,7 @@ Markdown is authoritative. SQLite indexes, embeddings, summaries, and rendered H
 
 ## Design documents
 
+- [Domain workspaces and setup](docs/domain-workspaces.md): editors, imports, photo recognition, maps and email reception.
 - [Architecture and basic framework](docs/architecture.md): components, proposed stack, package boundaries, workflows, and reliability.
 - [Record format and memory model](docs/data-model.md): vault layout, metadata, domain fields, time, provenance, and deletion.
 - [MCP integrations](docs/mcp.md): multiple external servers, permissions, synchronization, and the OpenLoci MCP interface.
@@ -100,6 +112,6 @@ Markdown is authoritative. SQLite indexes, embeddings, summaries, and rendered H
 
 Version 0.1 implements local capture and revision-checked editing through the API/CLI, SQLite and PostgreSQL storage adapters, full-text and filtered queries, HTML timelines and record pages, file-change reconciliation, assistant MCP reads, and explicit Notion/Google Calendar MCP imports. Notion page bodies retain the MCP fetch representation; they are not guaranteed to be a lossless native Notion export.
 
-The application is a single-user local prototype. Dedicated calendar grids, rich domain editors, tenant isolation, hosted authentication, semantic search, reviewed AI suggestions, scheduled imports, remote deletion handling, and bidirectional sync remain planned. Use one writer process per vault; the UI server is local and has no account authentication. PostgreSQL support provides a commercial deployment foundation, not a production multi-tenant service.
+The application is a single-user local prototype. Tenant isolation, hosted authentication, semantic search, reviewed AI suggestions, scheduled imports, direct Gmail reception, remote deletion handling, and bidirectional sync remain planned. The journal editor and email parser support a basic subset; they are not complete Notion/HealthKit/email-provider implementations. Use one writer process per vault; the UI server is local and has no account authentication. PostgreSQL support provides a commercial deployment foundation, not a production multi-tenant service.
 
 An open-source license must be selected and added before the first code release.

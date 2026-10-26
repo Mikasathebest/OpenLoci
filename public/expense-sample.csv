@@ -1,0 +1,3 @@
+id,date,title,amount,currency,direction,category,source
+expense-1,2026-10-26,Lunch,35.50,CNY,expense,Food,My ledger
+income-1,2026-10-26,Salary,10000.00,CNY,income,Salary,My ledger

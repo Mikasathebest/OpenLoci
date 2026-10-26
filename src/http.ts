@@ -10,6 +10,13 @@ import { messages, resolveLocale, type Locale } from './i18n.js';
 import { customStyles } from './custom-ui.js';
 import { pageCopy } from './page-copy.js';
 import { WebImports } from './integrations/web-imports.js';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { domainRouter } from './domain-http.js';
+import { domainPage } from './domain-view.js';
+import { domainTypes, MediaStore, receiveEmail, type DomainType } from './domain-service.js';
+
+const require = createRequire(import.meta.url);
 
 export function createHttpApp(app: Application, mcp: McpManager) {
   const http = express();
@@ -22,14 +29,21 @@ export function createHttpApp(app: Application, mcp: McpManager) {
     const host = req.headers.host || '';
     if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) { res.status(403).json({ error: t.loopbackOnly }); return; }
     res.set({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" });
+      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://tile.openstreetmap.org; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" });
+    if (req.query.type === 'travel') res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.set('Content-Language', locale);
     if (typeof req.query.lang === 'string') res.cookie('openloci_lang', locale, { httpOnly: true, sameSite: 'lax', maxAge: 365 * 86400_000, path: '/' });
     if (req.headers.origin && req.headers.origin !== `http://${host}`) { res.status(403).json({ error: t.crossOrigin }); return; }
     if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) && !req.is('application/json')) { res.status(415).json({ error: t.jsonRequired }); return; }
     next();
   });
-  http.use(express.json({ limit: '2mb' }));
+  http.use(express.json({ limit: '24mb' }));
+  http.use('/api/domain', domainRouter(app));
+  http.post('/api/inbound/travel-email', async (req, res) => { res.status(201).json(await receiveEmail(app, req.body, req.headers.authorization)); });
+  http.get('/media/:id', async (req, res) => {
+    const bytes = await new MediaStore(app).get(req.params.id);
+    res.type(req.params.id.endsWith('.jpg') ? 'jpeg' : req.params.id.endsWith('.png') ? 'png' : 'webp').send(bytes);
+  });
   http.get('/api/health', (_req, res) => { res.json({ status: 'ok', version: '0.1.0', database: app.db.driver.kind }); });
   http.get('/api/records', async (req, res) => { res.json(await app.search(req.query)); });
   http.get('/api/records/:id', async (req, res) => { const item = await app.get(req.params.id); res.set('ETag', `"${item.hash}"`).json(item); });
@@ -56,9 +70,17 @@ export function createHttpApp(app: Application, mcp: McpManager) {
   http.post('/api/rebuild', async (_req, res) => { const result = await app.rebuild(); res.status(result.errors.length ? 422 : 200).json(result); });
   http.get('/assets/style.css', (_req, res) => { res.type('css').send(stylesheet + customStyles); });
   http.get('/assets/app.js', (_req, res) => { res.type('js').send(browserScript(res.locals.locale)); });
+  for (const name of ['domain.js', 'domain.css', 'exercise-sample.csv', 'expense-sample.csv']) {
+    http.get(`/assets/${name}`, (_req, res) => { res.sendFile(fileURLToPath(new URL(`../public/${name}`, import.meta.url))); });
+  }
+  http.get('/assets/leaflet.js', (_req, res) => { res.sendFile(require.resolve('leaflet/dist/leaflet.js')); });
+  http.get('/assets/leaflet.css', (_req, res) => { res.sendFile(require.resolve('leaflet/dist/leaflet.css')); });
   http.get('/', async (req, res) => {
     const input = Object.fromEntries(Object.entries(req.query).filter(([, value]) => value !== ''));
     const query = querySchema.parse(input);
+    if (domainTypes.includes(query.type as DomainType)) {
+      res.type('html').send(await domainPage(app, query.type as DomainType, query, input, res.locals.locale)); return;
+    }
     const [records, pages] = await Promise.all([app.search(query), app.pages.list()]);
     res.type('html').send(page(records, query, app.db.driver.kind, app.validationErrors.length, res.locals.locale, { pages: pages.map(item => item.page) }));
   });

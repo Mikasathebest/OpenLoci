@@ -30,7 +30,7 @@ export function createMemoryServer(app: Application) {
   });
   // Capture is opt-in at process startup; the default MCP surface is read-only.
   if (process.env.OPENLOCI_MCP_WRITE === '1') server.registerTool('record_create', { description: 'Create a standard-sensitivity record in the local vault.', inputSchema: {
-    type: z.enum(types), title: z.string().min(1).max(500), date: z.string(), body: z.string(), attributes: z.record(z.unknown()).optional(),
+    type: z.enum(types), title: z.string().min(1).max(500), date: z.string(), body: z.string(), attributes: z.record(z.string(), z.unknown()).optional(),
   } }, async input => result(await app.create({ ...input, sensitivity: 'standard' })));
   return server;
 }

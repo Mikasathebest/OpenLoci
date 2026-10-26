@@ -1,6 +1,6 @@
 # OpenLoci implementation roadmap
 
-Version 0.1 delivers an initial slice across stages 1–4: file persistence, SQLite/PostgreSQL repositories and transfer, CLI/API capture and updates, local HTML timelines and detail pages, full-text queries, file reconciliation, read-only assistant MCP, and explicit Notion/Google Calendar imports. The acceptance criteria below remain the target for completing each full stage. Advanced domain validation, calendar grids, reviewed memories, scheduled imports, and multi-user deployment are still pending.
+Version 0.1 delivers an initial slice across stages 1–4: file persistence, SQLite/PostgreSQL repositories and transfer, CLI/API capture and updates, local HTML timelines and detail pages, full-text queries, file reconciliation, read-only assistant MCP, and explicit Notion/Google Calendar imports. The acceptance criteria below remain the target for completing each full stage. Six distinct domain workspaces now include a tabbed Markdown block editor, calendar grids, meal photo capture with optional recognition, health/file imports, budgets, and map/email itinerary capture. See [implemented behavior and limitations](domain-workspaces.md). Advanced domain validation, reviewed memories, scheduled imports, and multi-user deployment remain pending.
 
 ## Stage 1 Portable storage and capture
 
@@ -10,7 +10,7 @@ Acceptance: create and edit each type, preserve unknown fields and free-form pro
 
 ## Stage 2 Local browsing and search
 
-Add SQLite projections, full-text search, file watching and reconciliation, the local HTTP API, and React pages for the calendar, daily timeline, journal, meals, exercise, expenses, and travel. Include capture forms and a Markdown editor.
+Add SQLite projections, full-text search, file watching and reconciliation, the local HTTP API, and browser pages for the calendar, daily timeline, journal, meals, exercise, expenses, and travel. Include capture forms and a Markdown editor.
 
 Acceptance: manual file edits appear in views; malformed files produce visible errors; a full rebuild reproduces query results. Calendar tests cover all-day ranges, timezone changes, recurring exceptions, and planned versus completed activity. Rendering tests cover untrusted HTML and unsafe links.
 

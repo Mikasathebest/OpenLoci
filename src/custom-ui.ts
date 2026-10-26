@@ -1,5 +1,6 @@
 import { escapeHtml as esc, renderMarkdown } from './rendering.js';
-import { types, type StoredRecord } from './core.js';
+import { type StoredRecord } from './core.js';
+import { domainTypes as types } from './domain-service.js';
 import { type CustomPage, pageLayouts } from './custom-pages.js';
 import { messages, displayDate, type Locale } from './i18n.js';
 import { pageCopy } from './page-copy.js';
