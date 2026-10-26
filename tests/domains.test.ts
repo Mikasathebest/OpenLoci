@@ -111,10 +111,10 @@ test('journal tabs, slash todos and revision-based saving persist Markdown; relo
  const unload=new w.Event('beforeunload',{cancelable:true});w.dispatchEvent(unload);assert.equal(unload.defaultPrevented,false);dom.window.close();
 });
 
-test('Inference Hub adapter uses the exact completion URL and supplied protocol with explicit image input',async t=>{
- const keys=['OPENLOCI_AI_BASE_URL','OPENLOCI_AI_MODEL','OPENLOCI_AI_API_KEY','OPENLOCI_AI_PROTOCOL'];const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));let captured:any;
+test('OpenAI-compatible adapter uses the configured completion URL and standard image messages',async t=>{
+ const keys=['OPENLOCI_AI_BASE_URL','OPENLOCI_AI_MODEL','OPENLOCI_AI_API_KEY','OPENLOCI_AI_API_KEY_FILE'];const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));let captured:any;
  const server=createServer(async(req,res)=>{assert.equal(req.url,'/v1/chat/completions');let body='';for await(const chunk of req)body+=chunk;captured=JSON.parse(body);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({choices:[{message:{content:'{"title":"Tofu","items":["Tofu"],"calories":null}'}}]}));}).listen(0,'127.0.0.1');await once(server,'listening');
  t.after(async()=>{for(const key of keys)if(previous[key]===undefined)delete process.env[key];else process.env[key]=previous[key];await new Promise<void>(resolve=>server.close(()=>resolve()));});
- process.env.OPENLOCI_AI_BASE_URL=`http://127.0.0.1:${(server.address() as AddressInfo).port}/v1/chat/completions`;process.env.OPENLOCI_AI_MODEL='test/model';process.env.OPENLOCI_AI_PROTOCOL='inference-hub';
- const result=await recognize('Identify food',{data:Buffer.from(png,'base64'),mime:'image/png'}) as {title:string};assert.equal(result.title,'Tofu');assert.equal(typeof captured.system,'string');assert.equal(captured.messages.length,1);assert.equal(captured.messages[0].content[1].type,'image_url');assert.equal(captured.max_tokens,2048);
+ process.env.OPENLOCI_AI_BASE_URL=`http://127.0.0.1:${(server.address() as AddressInfo).port}/v1/chat/completions`;process.env.OPENLOCI_AI_MODEL='test/model';process.env.OPENLOCI_AI_API_KEY='test-token';delete process.env.OPENLOCI_AI_API_KEY_FILE;
+ const result=await recognize('Identify food',{data:Buffer.from(png,'base64'),mime:'image/png'}) as {title:string};assert.equal(result.title,'Tofu');assert.equal('system' in captured,false);assert.equal(captured.messages.length,2);assert.equal(captured.messages[0].role,'system');assert.equal(captured.messages[1].role,'user');assert.equal(captured.messages[1].content[1].type,'image_url');assert.equal(captured.max_tokens,2048);
 });

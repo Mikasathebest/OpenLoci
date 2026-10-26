@@ -56,10 +56,11 @@ OPENLOCI_AI_MODEL=your-model-id
 OPENLOCI_AI_API_KEY=your-private-key
 # Or keep the key in a private file containing only its value:
 # OPENLOCI_AI_API_KEY_FILE=/absolute/path/to/private-key.txt
-OPENLOCI_AI_PROTOCOL=openai
 ```
 
-The URL may be a base `/v1` URL or the full `/v1/chat/completions` endpoint. The default protocol uses system/user messages. `inference-hub` sends the top-level `system` field and `max_tokens` requested by the NVIDIA Inference Hub format, retaining the supplied provider/company/model ID. For photo recognition, select a model/provider route that actually supports `image_url` content. No model is assumed available just because its ID was configured. Authentication, model access and image support must be verified with the service.
+Use any OpenAI-compatible Chat Completions service. Configure its URL, API token and model ID yourself; OpenLoci has no built-in provider or model. The URL may be a base `/v1` URL or the full `/v1/chat/completions` endpoint. Requests use `Authorization: Bearer <token>`, a `model` field and standard system/user `messages`. Text input uses a string; photo input uses text plus an `image_url` data URL. Responses are read from `choices[0].message.content` and parsed as JSON. For photo recognition, choose a model that supports image input. Authentication, model access and image support must be verified with your chosen service. See the [official request/response format](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
+The reusable TypeScript interface is `RecognitionConfig` and `recognizeWith(config, prompt, image?)` in `src/integrations/recognition.ts`. Applications can pass configuration directly; OpenLoci reads it from the private environment variables above. Existing HTTP interfaces remain `POST /api/domain/photos/recognize` with `{id}` and `POST /api/domain/travel/parse-email` with `{content, use_model: true}`. They return validated food/reservation JSON for review, without exposing the configured token to the browser.
 
 Remote endpoints require HTTPS and an API key; a localhost development model may omit the key. Restart the server after editing environment configuration. Provider calls have a timeout and do not overwrite the source on failure. Only explicit recognition actions send data. Text extraction and photo recognition use the same configured model in this initial implementation.
 

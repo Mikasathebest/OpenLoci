@@ -38,7 +38,7 @@ For compiled execution, run `npm run build` followed by `npm start`. Validate wi
 
 - **Journal:** multiple tabs, Markdown blocks, headings and todos through `/`, autosave and revision checks.
 - **Calendar:** Google Calendar-inspired week/month views; click a half-hour slot to create events, tasks or meetings. Entries are local; no invitations are sent.
-- **Meals:** upload a photo, review food and optional calorie estimates, and add a linked OpenLoci calendar event. Recognition requires your configured model and credentials.
+- **Meals:** upload a photo, review food and optional calorie estimates, and add a linked OpenLoci calendar event. Recognition uses an OpenAI-compatible endpoint with your own URL, API token and model ID.
 - **Exercise:** Apple Health-inspired activity rings, steps, heart rate and workouts; import CSV, JSON or Apple Health XML with source selection.
 - **Expenses:** monthly income/expenses, budget, categories, transactions and history; CSV/JSON import with preview and deduplication. Currencies are kept separate.
 - **Travel:** map and itinerary by date/city/place, map pins, and reviewable email paste/`.eml` import. Automatic mailbox reception requires a separately configured bridge.
